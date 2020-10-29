@@ -1,0 +1,43 @@
+language: java
+os: linux
+jdk:
+- openjdk11
+
+branches:
+  only:
+  - master
+  - develop
+  - "/^v[0-9]+(\\.[0-9]+)+/"
+
+install:
+  - source ./docker/setBranchVariable.sh
+  - git status
+
+stages:
+  - compile
+  - deploy
+
+jobs:
+  include:
+    - stage: compile
+      name: "Maven build"
+      script:
+        - mvn clean && mvn install -B -Dmaven.javadoc.skip=true
+    - stage: deploy
+      name: "Deploy Docker"
+      script:
+        - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then source ./docker/travis-deploy-docker.sh; fi'
+
+services:
+- docker
+
+cache:
+  directories:
+    - '$HOME/.m2/repository'
+
+env:
+  global:
+  # travis encrypt 'DOCKER_USERNAME=[username]'
+  - secure: "Atz92f4uV0upcHW59MZCoMNcNOmeEGUFb++xWiXHWX3zsbzvH8TZXWq6kq7IXuLr8RBbNcjzfDBeCe21bv87K6jkoM7cwvz7oWOlz95Zl+ajtLlFZ3WWkRvSGdqk+b/H6X+DleGLuS+PC2LbC9DxKHR1/Q3b4GlHz4ZmAJQ9zSSgidUncNfrxhGSJW4Q4PZTpx+laRyAPc2KSCRKpae4FrET22WOwN2MjZgcdnlPRHG029fGbYyBX5QmKs2Aj34GY6zPHelRxWpuGKC5UqhuM7nI+PtnCkAWsmb0CWd0uI8GLfPXvcyIaMCEBk/j0FMKKsF5PoqZIijVzVCW9RQVuIb23ylG9cUTkHJQiarnTM6zxWy/4aSIy8uLdyDbCE4RvFECVYVvinH2bMXfnG9IyQ3/dic+cGzSB3g2cRJzYnIIE8hsMPIhkuMijizVGaWFPBUAnUVoUrLXG4vckf3gY4JpqVkc/zLAmXftpSpUkHg8B6cJShnQaLgMqk16k/LdOyY/84jmBWNU+///MlblAP3Pz9TZB0o7vb/SZyp7Z0ZV2LGkLE44fGwTfB/NytkMLw6AXZlx7TB5kHoKd7UurbeAPvirJLuJQN6Mn9Yg+yGUGd7DoaFQHAUZL23QKtwG3xQyEW3SbZzzucoiAQiiNmwQDk0hPw5NzukqdZi+RIc="
+  # travis encrypt 'DOCKER_PASSWORD=[password]'
+  - secure: "HjQ61/BptxLSHDY1O0icC9zhoK09SlNp1EyIJ3Hv8C3XH9AHhyxdk/YKdUZb0+Gb1Vc0cURe1sH0e+w/fyo7U5ZDs8Ly55f+T1LbxVY3xAnWwsiRXY882vyYgw5QvZQZLb/q/3eoNAWFUPegKSq4V+cnK5x6/aj6nUhIekHIeKjNbZXS0P6qHmdrsJ8LPWXre0dQV3RVU8gYbEds6kmQNU9IX/JfZxMGLMJX49SJAsYi0H+RVFwLRttvRYvNd9uuUlj9uENJOkoMflH/DKfHI/+MMlGoNDyXfFKeXanXeYTSX18mEunXcPuEw1KtqlQOL2mCrKLdhFlzHSGc3YuxbU8c2dMs/Oi4zSQlnGZ01CsexCahI82YXp+TuVAJ4L5KMrYqUo3b0+aOlIDzsTr/xilwV8/ZKXS632MAGX9n0vi7FbEwC01KNpDAk+wnMCECRZGMFsRXydlIYl4tWJFv5OJ0r1dArBUCcghHcFgVzUdubAwaOdTlPSKVcO5TfgOBX66I8jk/aQhJxnxf3suDLyMR+BsopLpuq7rZObJ1WZVXLROKp0uwJgwmsXOjA8NetpeH2x0VVTrOeSZo13L4HwvdBgPCuiQUbtrE4VawE7FKKb649AtqjT3mry94r98D1KlRgkvZXvfLm67BYPqUNJ/9qM8qTESB0czOP3NK38w="
