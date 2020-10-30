@@ -30,8 +30,19 @@ import com.inspire.development.core.Core;
 import com.inspire.development.database.DBConnector;
 import com.inspire.development.database.connector.PostgreSQL;
 import com.inspire.development.database.connector.SQLite;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -40,16 +51,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.web.bind.annotation.*;
-
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.stream.Collectors;
 
 
 class ConformanceDeclaration {
@@ -71,6 +72,7 @@ class ConformanceDeclaration {
 
 @RestController
 public class RESTController {
+    private static final Logger LOGGER = LogManager.getLogger(RESTController.class);
 
     private String hostEnv;
 
@@ -648,7 +650,9 @@ public class RESTController {
         String pwd = (String) input.get("pwd");
         if (pwd == null) return new ResponseEntity<>("No password provided missing", HttpStatus.BAD_REQUEST);
 
-        try (PrintWriter out = new PrintWriter("./config/admin.pw")) {
+        String passwordFile = System.getenv("CONFIG_USERS") != null ? System.getenv("CONFIG_USERS") : "./config/admin.pw";
+        LOGGER.debug("Storing passwords in {}", passwordFile);
+        try (PrintWriter out = new PrintWriter(passwordFile)) {
             out.print(BCrypt.hashpw(pwd, BCrypt.gensalt(12)));
         } catch (Exception e) {
 

@@ -24,7 +24,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -33,15 +34,20 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class JwtUserDetailsService implements UserDetailsService {
+    private static final Logger LOGGER = LogManager.getLogger(JwtUserDetailsService.class);
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
         if ("admin".equals(username)) {
             String passwordHash = "";
             try {
-                byte[] encoded = Files.readAllBytes(Paths.get("./config/admin.pw"));
+                String passwordFile = System.getenv("CONFIG_USERS") != null ? System.getenv("CONFIG_USERS") : "./config/admin.pw";
+                LOGGER.debug("Reading passwords from {}", passwordFile);
+                byte[] encoded = Files.readAllBytes(Paths.get(passwordFile));
                 passwordHash = new String(encoded, StandardCharsets.UTF_8);
             } catch (IOException e) {
+                LOGGER.debug("Reading passwords failed, using default password");
                 passwordHash = "$2y$10$HRv1s8OTjtj15v0OKbVzwemobM84SfXJml1kT/TDdrqoAGZ/Kw8iS";
             }
             return new User("admin", passwordHash,

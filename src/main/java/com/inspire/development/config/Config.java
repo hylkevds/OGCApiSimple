@@ -22,10 +22,8 @@ package com.inspire.development.config;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.inspire.development.collections.ImportantLinkList;
-import com.inspire.development.database.DBConnector;
 
 import java.net.URL;
-import java.util.ArrayList;
 
 
 
@@ -84,6 +82,9 @@ public class Config {
     }
 
     public String getConnectionPath() {
+        if(System.getenv("CONFIG_CONNECTIONS") != null){
+            return System.getenv("CONFIG_CONNECTIONS");
+        }
         return connectionPath;
     }
 

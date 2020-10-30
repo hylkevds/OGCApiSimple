@@ -4,11 +4,19 @@ services:
   web:
     image: fraunhoferiosb/ogcapisimple:latest
     environment:
-      - todo=todo
+      - CONFIG_OGCAPISIMPLE=/mnt/config/config.json
+      - CONFIG_USERS=/mnt/config/users.pw
+      - CONFIG_CONNECTIONS=/mnt/config/connections.json
+      - LOG_OGCAPISIMPLE=/mnt/config/log/
+      - SQLITE_OGCAPISIMPLE=/mnt/config/sqlite/
+      - PAGING_LIMIT_OGCAPISIMPLE=100
+      - HOST_OGCAPISIMPLE=http://localhost:8080/ogcapisimple
     ports:
       - 8080:8080
     depends_on:
       - database
+    volumes:
+      - ogcapisimple_config_volume:/mnt/config
 
   database:
     image: postgis/postgis:11-2.5-alpine
@@ -20,3 +28,4 @@ services:
       - postgis_volume:/var/lib/postgresql/data
 volumes:
     postgis_volume:
+    ogcapisimple_config_volume:
